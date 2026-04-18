@@ -180,6 +180,11 @@ class GroupedMultiQueryAttention(nn.Module):
         q_idx = torch.arange(total_len - seq_len, total_len, device=device).unsqueeze(1)
         k_idx = torch.arange(total_len, device=device).unsqueeze(0)
         return q_idx >= k_idx
+
+    def reset_cache(self):
+        """Reset KV cache về 0. Gọi trước mỗi forward pass khi training."""
+        self.cache_k.zero_()
+        self.cache_v.zero_()
     
     def forward(self, x: torch.Tensor, start_pos: int) -> torch.Tensor:
         """Compute grouped multi-query attention.
@@ -203,8 +208,8 @@ class GroupedMultiQueryAttention(nn.Module):
             k = self.rotary(k, start_pos=start_pos)
 
         # Lưu K, V vào cache (chưa inflate)
-        self.cache_k[:batch_size, start_pos : start_pos + seq_len] = k
-        self.cache_v[:batch_size, start_pos : start_pos + seq_len] = v
+        self.cache_k[:batch_size, start_pos : start_pos + seq_len] = k.detach()
+        self.cache_v[:batch_size, start_pos : start_pos + seq_len] = v.detach()
 
         # Lấy toàn bộ lịch sử từ cache
         k = self.cache_k[:batch_size, : start_pos + seq_len]  # (B, total_seq_len, n_kv_heads, head_dim)
