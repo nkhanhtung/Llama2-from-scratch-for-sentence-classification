@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from .llama2_components import ModelArgs, GroupedMultiQueryAttention, FeedForward, RMSNorm, RotaryEncodings
+from llama2_components import ModelArgs, GroupedMultiQueryAttention, FeedForward, RMSNorm, RotaryEncodings
 
 
 """
